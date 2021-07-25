@@ -6,11 +6,12 @@ const TRANSFORM_METHOD_JSON = 'json';
 const TRANSFORM_METHOD_BINARY = 'binary';
 const SUPPORTED_TRANSFORM_METHODS = [ TRANSFORM_METHOD_JSON, TRANSFORM_METHOD_BINARY ];
 // These providers will be dynamically initialized on first use of the helper functions
-const DEFAULT_PROVIDERS = {} as Record<string, unknown>;
+const DEFAULT_PROVIDERS = new Map();
 
 class GetOptions implements GetOptionsInterface {
   public forceFetch: boolean = false;
   public maxAge: number = DEFAULT_MAX_AGE_SECS;
+  public sdkOptions?: unknown;
   public transform?: string;
 
   public constructor(options: GetOptionsInterface) {
@@ -21,6 +22,7 @@ class GetOptions implements GetOptionsInterface {
 class GetMultipleOptions implements GetMultipleOptionsInterface {
   public forceFetch: boolean = false;
   public maxAge: number = DEFAULT_MAX_AGE_SECS;
+  public sdkOptions?: unknown;
   public throwOnTransformError?: boolean = false;
   public transform?: string;
 
@@ -30,53 +32,54 @@ class GetMultipleOptions implements GetMultipleOptionsInterface {
 }
 
 abstract class BaseProvider implements ClassForBaseProvider {
-  public store: Record<string, ExpirableValue> = {};
+  public store: Map<string, ExpirableValue> = new Map;
   
-  abstract _get(name: string): string;
+  abstract _get(name: string, sdkOptions?: unknown): Promise<string | undefined>;
 
-  abstract _getMultiple(path: string): Record<string, string|undefined>;
+  abstract _getMultiple(path: string, sdkOptions?: unknown): Promise<Record<string, string|undefined>>;
   
-  public get(name: string, options?: GetOptionsInterface): void | string | Record<string, unknown> {
+  public async get(name: string, options?: GetOptionsInterface): Promise<void | string | Record<string, unknown>> {
     const configs = new GetOptions(options || {});
     const key = [ name, configs.transform ].toString();
 
     if (configs.forceFetch === false && this.hasNotExpired(key)) {
-      return this.store[key]?.value;
+      return this.store.get(key)?.value;
     }
 
     let value;
     try {
-      value = this._get(name);
+      value = await this._get(name, options?.sdkOptions);
+      assert(value !== undefined);
     } catch (error) {
       throw Error(error);
     }
 
-    if (configs.transform !== undefined) {
+    if (value !== undefined && configs.transform !== undefined) {
       value = transformValue(value, configs.transform);
     }
 
     if (value !== undefined) {
       const ttl = new Date();
-      this.store[key] = {
+      this.store.set(key, {
         value: value,
         ttl: ttl.setSeconds(ttl.getSeconds() + configs.maxAge)
-      };
+      });
     }
 
     return value;
   }
 
-  public getMultiple(path: string, options?: GetMultipleOptionsInterface): void | Record<string, unknown> {
+  public async getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<void | Record<string, unknown>> {
     const configs = new GetMultipleOptions(options || {});
     const key = [ path, configs.transform ].toString();
 
     if (configs.forceFetch === false && this.hasNotExpired(key)) {
-      return this.store[key]?.value as Record<string, unknown>;
+      return this.store.get(key)?.value as Record<string, unknown>;
     }
 
     let values: Record<string, string | undefined> = {};
     try {
-      values = this._getMultiple(path);
+      values = await this._getMultiple(path);
     } catch (error) {
       throw Error(error);
     }
@@ -98,21 +101,22 @@ abstract class BaseProvider implements ClassForBaseProvider {
 
     if (Array.from(Object.keys(values)).length !== 0) {
       const ttl = new Date();
-      this.store[key] = {
+      this.store.set(key, {
         value: path,
         ttl: ttl.setSeconds(ttl.getSeconds() + configs.maxAge)
-      };
+      });
     }
 
     return values;
   }
 
   private hasNotExpired(key: string): boolean {
-    if (!(key in this.store)) {
+    const potentialValue = this.store.get(key);
+    if (potentialValue === undefined) {
       return false;
+    } else {
+      return potentialValue.ttl > Date.now();
     }
-
-    return this.store[key].ttl > Date.now();
   }
 
 }

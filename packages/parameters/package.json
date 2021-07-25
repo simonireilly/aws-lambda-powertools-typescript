@@ -45,5 +45,7 @@
     "bugs": {
         "url": "https://github.com/awslabs/aws-lambda-powertools-typescript/issues"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@aws-sdk/client-secrets-manager": "^3.23.0"
+    }
 }

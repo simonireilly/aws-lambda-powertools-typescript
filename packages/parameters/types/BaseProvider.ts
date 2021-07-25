@@ -1,19 +1,21 @@
 interface GetOptionsInterface {
   maxAge?: number
   forceFetch?: boolean
+  sdkOptions?: unknown
   transform?: string
 }
 
 type GetMultipleOptionsInterface = {
   maxAge?: number
   forceFetch?: boolean
+  sdkOptions?: unknown
   transform?: string
   throwOnTransformError?: boolean
 };
 
 type ClassForBaseProvider = {
-  get(name: string, options?: GetOptionsInterface): void | string | Record<string, unknown>
-  getMultiple(path: string, options?: GetMultipleOptionsInterface): void | Record<string, unknown>
+  get(name: string, options?: GetOptionsInterface): Promise<void | string | Record<string, unknown>>
+  getMultiple(path: string, options?: GetMultipleOptionsInterface): Promise<void | Record<string, unknown>>
 };
 
 type ExpirableValue = {
