@@ -49,7 +49,6 @@ abstract class BaseProvider implements ClassForBaseProvider {
     let value;
     try {
       value = await this._get(name, options?.sdkOptions);
-      assert(value !== undefined);
     } catch (error) {
       throw Error(error);
     }
@@ -79,7 +78,7 @@ abstract class BaseProvider implements ClassForBaseProvider {
 
     let values: Record<string, string | undefined> = {};
     try {
-      values = await this._getMultiple(path);
+      values = await this._getMultiple(path, options?.sdkOptions);
     } catch (error) {
       throw Error(error);
     }

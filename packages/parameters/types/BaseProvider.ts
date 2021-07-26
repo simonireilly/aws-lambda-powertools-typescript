@@ -5,13 +5,13 @@ interface GetOptionsInterface {
   transform?: string
 }
 
-type GetMultipleOptionsInterface = {
+interface GetMultipleOptionsInterface {
   maxAge?: number
   forceFetch?: boolean
   sdkOptions?: unknown
   transform?: string
   throwOnTransformError?: boolean
-};
+}
 
 type ClassForBaseProvider = {
   get(name: string, options?: GetOptionsInterface): Promise<void | string | Record<string, unknown>>

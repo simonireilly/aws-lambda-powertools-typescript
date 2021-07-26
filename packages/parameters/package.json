@@ -17,7 +17,8 @@
         "prepublishOnly": "npm test && npm run lint",
         "preversion": "npm run lint",
         "version": "npm run format && git add -A src",
-        "postversion": "git push && git push --tags"
+        "postversion": "git push && git push --tags",
+        "example:dynamodb-provider": "ts-node examples/dynamodb-provider.ts"
     },
     "homepage": "https://github.com/awslabs/aws-lambda-powertools-typescript/tree/master/packages/parameters#readme",
     "license": "MIT",
@@ -48,6 +49,7 @@
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.23.0",
         "@aws-sdk/client-secrets-manager": "^3.23.0",
-        "@aws-sdk/client-ssm": "^3.23.0"
+        "@aws-sdk/client-ssm": "^3.23.0",
+        "@aws-sdk/util-dynamodb": "^3.23.0"
     }
 }

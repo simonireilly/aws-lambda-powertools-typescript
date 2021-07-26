@@ -1,53 +1,80 @@
-import { strict as assert } from 'assert';
 import { BaseProvider } from './BaseProvider';
-import { DynamoDBClient, DynamoDBClientConfig, GetItemCommand, GetItemCommandInput, AttributeValue } from '@aws-sdk/client-dynamodb';
+import { AttributesOptions, GetItemCommandOptions, QueryCommandOptions } from '../types/DynamoDBProvider';
+import { DynamoDBClient, DynamoDBClientConfig, GetItemCommand, QueryCommand, QueryCommandInput, QueryCommandOutput } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb';
 
 class DynamoDBProvider extends BaseProvider {
   public client: DynamoDBClient;
   
-  public keyAttr?: string;
+  public keyAttr: string = 'id';
   
-  public sortAttr?: string;
+  public sortAttr: string = 'sk';
   
   public tableName?: string;
 
-  public valueAttr?: string;
+  public valueAttr: string = 'value';
 
-  public constructor(tableName: string, keyAttr: string = 'id', sortAttr: string = 'sk', valueAttr: string = 'value', config: DynamoDBClientConfig = {}) {
+  public constructor(tableName: string, attributes: AttributesOptions = {}, config: DynamoDBClientConfig = {}) {
     super();
     this.client = new DynamoDBClient(config);
 
     this.tableName = tableName;
-    this.keyAttr = keyAttr;
-    this.sortAttr = sortAttr;
-    this.valueAttr = valueAttr;
+    Object.assign(this, attributes);
   }
 
-  public async _get(name: string, sdkOptions?: GetItemCommand): Promise<string | undefined> {
-    let result;
-    if (sdkOptions === undefined) {
-      assert(this.keyAttr !== undefined);
-      /* const keyVal: { [key: string]: AttributeValue } = {};
-      keyVal[this.keyAttr] = name; */
-      const command = new GetItemCommand({
-        TableName: this.tableName,
-        Key: {
-          'id': {
-            'S': name
-          }
-        }
-      });
+  public async _get(name: string, sdkOptions: GetItemCommandOptions = {}): Promise<string | undefined> {
+    // Explicit arguments will take precendence over sdkOptions arguments
+    const commandInput = Object.assign(sdkOptions, {
+      TableName: this.tableName,
+      Key: marshall({
+        [this.keyAttr]: name
+      })
+    });
 
-      result = await this.client.send(command);
-    } else {
-      result = await this.client.send(sdkOptions);
+    const result = await this.client.send(new GetItemCommand(commandInput));
+    
+    if (result.Item !== undefined) {
+      const item = unmarshall(result.Item);
+      
+      return item[this.valueAttr];
+    }
+  }
+
+  public async _getMultiple(path: string, sdkOptions: QueryCommandOptions = {}): Promise<Record<string, string | undefined>> {
+    // Explicit arguments will take precendence over sdkOptions arguments
+    const commandInput = Object.assign(sdkOptions, {
+      TableName: this.tableName,
+      KeyConditionExpression: `#keyAttr = :path`,
+      ExpressionAttributeValues: marshall({ ':path': path }),
+      ExpressionAttributeNames: { '#keyAttr': this.keyAttr }
+    });
+
+    const items: Record<string, string | undefined> = {};
+    await this.query(commandInput, items);
+
+    return items;
+  }
+
+  private async formatResult(result: QueryCommandOutput, items: Record<string, string | undefined>): Promise<Record<string, string | undefined>> {
+    if (result.Items !== undefined) {
+      result.Items.forEach(item => {
+        const itemUnmarshalled = unmarshall(item);
+        items[itemUnmarshalled[this.sortAttr]] = itemUnmarshalled[this.valueAttr];
+      });
     }
 
-    return result.Item;
+    return items;
   }
 
-  public _getMultiple(_path: string): Promise<Record<string, string | undefined>> {
-    throw Error('Not implemented.');
+  private async query(commandInput: QueryCommandInput, items: Record<string, string | undefined>): Promise<Record<string, string | undefined>> {
+    const result = await this.client.send(new QueryCommand(commandInput));
+    this.formatResult(result, items);
+    if (result.LastEvaluatedKey !== undefined) {
+      commandInput.ExclusiveStartKey = result.LastEvaluatedKey;
+      await this.query(commandInput, items);
+    }
+
+    return items;
   }
 }
 

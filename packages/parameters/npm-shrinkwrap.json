@@ -975,6 +975,21 @@
                 }
             }
         },
+        "@aws-sdk/util-dynamodb": {
+            "version": "3.23.0",
+            "resolved": "https://registry.npmjs.org/@aws-sdk/util-dynamodb/-/util-dynamodb-3.23.0.tgz",
+            "integrity": "sha512-XKI99lxuu+od0DvMt3Fo/AChb8olMT/pHuauCEM+z5actnzIs0NyriRqdtwsSW645LfSxA9cUnQCPsgh7iLUTg==",
+            "requires": {
+                "tslib": "^2.3.0"
+            },
+            "dependencies": {
+                "tslib": {
+                    "version": "2.3.0",
+                    "resolved": "https://registry.npmjs.org/tslib/-/tslib-2.3.0.tgz",
+                    "integrity": "sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg=="
+                }
+            }
+        },
         "@aws-sdk/util-hex-encoding": {
             "version": "3.23.0",
             "resolved": "https://registry.npmjs.org/@aws-sdk/util-hex-encoding/-/util-hex-encoding-3.23.0.tgz",
