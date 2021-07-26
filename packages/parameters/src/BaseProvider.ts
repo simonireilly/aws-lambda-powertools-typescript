@@ -1,4 +1,5 @@
 import { strict as assert } from 'assert';
+import { fromBase64 } from '@aws-sdk/util-base64-node';
 import { ClassForBaseProvider, ExpirableValue, GetMultipleOptionsInterface, GetOptionsInterface } from '../types';
 
 const DEFAULT_MAX_AGE_SECS = 5;
@@ -147,7 +148,7 @@ const transformValue = (value: string, transform: string, throwOnTransformError:
       const regex = '(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\/]{3}=)?';
       assert(new RegExp('^' + regex + '$', 'gi').test(value) === true);
 
-      return Buffer.from(value, 'base64').toString('utf-8');
+      return new TextDecoder('utf-8').decode(fromBase64(value));
     }
   } catch (error) {
     if (throwOnTransformError) {

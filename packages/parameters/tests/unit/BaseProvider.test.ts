@@ -1,4 +1,7 @@
 import { BaseProvider } from '../../src';
+import { toBase64 } from '@aws-sdk/util-base64-node';
+
+const encoder = new TextEncoder();
 
 describe('Class: BaseProvider', () => {
 
@@ -125,7 +128,7 @@ describe('Class: BaseProvider', () => {
 
     test('when called with a binary transform, and the value is a valid string representation of a binary, it returns the decoded value', async () => {
       // Prepare
-      const mockBinary = Buffer.from('my-value', 'utf-8').toString('base64');
+      const mockBinary = toBase64(encoder.encode('my-value'));
       class TestProvider extends BaseProvider {
         public _get(_name: string): Promise<string> {
           return new Promise((resolve, _reject) => resolve(mockBinary));
@@ -303,7 +306,7 @@ describe('Class: BaseProvider', () => {
 
     test('when called with a binary transform, and all the values are a valid string representation of a binary, it returns an object with all the values', async () => {
       // Prepare
-      const mockBinary = Buffer.from('my-value', 'utf-8').toString('base64');
+      const mockBinary = toBase64(encoder.encode('my-value'));
       class TestProvider extends BaseProvider {
         public _get(_name: string): Promise<string> {
           throw Error('Not implemented.');
@@ -328,7 +331,7 @@ describe('Class: BaseProvider', () => {
 
     test('when called with a binary transform, and one of the values is NOT a valid string representation of a binary, it returns an object with partial failures', async () => {
       // Prepare
-      const mockBinary = Buffer.from('my-value', 'utf-8').toString('base64');
+      const mockBinary = toBase64(encoder.encode('my-value'));
       class TestProvider extends BaseProvider {
         public _get(_name: string): Promise<string> {
           throw Error('Not implemented.');
@@ -377,7 +380,7 @@ describe('Class: BaseProvider', () => {
 
     test('when called with auto transform and the key of the parameter ends with `.binary`, and all the values are a valid string representation of a binary, it returns an object with all the transformed values', async () => {
       // Prepare
-      const mockBinary = Buffer.from('my-value', 'utf-8').toString('base64');
+      const mockBinary = toBase64(encoder.encode('my-value'));
       class TestProvider extends BaseProvider {
         public _get(_name: string): Promise<string> {
           throw Error('Not implemented.');
@@ -402,7 +405,7 @@ describe('Class: BaseProvider', () => {
 
     test('when called with auto transform and the key of the parameter DOES NOT end with `.binary` or `.json`, it returns an object with all the values NOT transformed', async () => {
       // Prepare
-      const mockBinary = Buffer.from('my-value', 'utf-8').toString('base64');
+      const mockBinary = toBase64(encoder.encode('my-value'));
       class TestProvider extends BaseProvider {
         public _get(_name: string): Promise<string> {
           throw Error('Not implemented.');
