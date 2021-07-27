@@ -26,13 +26,13 @@ class SecretsProvider extends BaseProvider {
   }
 }
 
-const get_secret = async (name: string, sdkOptions?: GetOptionsInterface): Promise<void | string | Record<string, unknown>> => {
+const get_secret = async (name: string, options?: GetOptionsInterface): Promise<void | string | Record<string, unknown>> => {
   // Only create the provider if this function is called at least once
   if (!DEFAULT_PROVIDERS.has('secrets')) {
     DEFAULT_PROVIDERS.set('secrets', new SecretsProvider());
   }
 
-  return await DEFAULT_PROVIDERS.get('secrets').get(name, sdkOptions);
+  return await DEFAULT_PROVIDERS.get('secrets').get(name, options);
 };
 
 export {
