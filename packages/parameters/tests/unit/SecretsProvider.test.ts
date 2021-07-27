@@ -1,11 +1,11 @@
 import { BaseProvider } from '../../src/BaseProvider';
 import { DEFAULT_PROVIDERS } from '../../src/BaseProvider';
+import { SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 import { get_secret, SecretsProvider } from '../../src/SecretsProvider';
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 const defaultProviderGetSpy = jest.spyOn(DEFAULT_PROVIDERS, 'get');
 const defaultProviderHasSpy = jest.spyOn(DEFAULT_PROVIDERS, 'has');
-jest.spyOn(SecretsManagerClient.prototype, 'send').mockImplementation(() => ({ SecretString: 'foo', }));
+const clientSpy = jest.spyOn(SecretsManagerClient.prototype, 'send').mockImplementation(() => ({ SecretString: 'foo', }));
 
 describe('Class: SecretsProvider', () => {
 
@@ -24,6 +24,11 @@ describe('Class: SecretsProvider', () => {
 
       // Assess
       expect(value).toEqual('foo');
+      expect(clientSpy).toBeCalledWith(expect.objectContaining({
+        input: expect.objectContaining({
+          SecretId: 'my-parameter'
+        })
+      }));
 
     });
 
@@ -39,6 +44,7 @@ describe('Class: SecretsProvider', () => {
 
       // Assess
       expect(value).toEqual('bar');
+      expect(clientSpy).toBeCalledTimes(0);
 
     });
 
@@ -54,24 +60,48 @@ describe('Class: SecretsProvider', () => {
 
       // Assess
       expect(value).toEqual('foo');
+      expect(clientSpy).toBeCalledTimes(1);
 
     });
 
     test('when called with custom sdkOptions, it uses them, and it returns a value from remote', async () => {
-
       // Prepare
       const provider = new SecretsProvider();
-      const customCommand = new GetSecretValueCommand({
-        SecretId: 'A',
-        VersionId: '7a9155b8-2dc9-466e-b4f6-5bc46516c84d'
-      });
 
       // Act
-      const value = await provider.get('my-parameter', { sdkOptions: customCommand });
+      const value = await provider.get('my-parameter', { sdkOptions: {
+        VersionId: '7a9155b8-2dc9-466e-b4f6-5bc46516c84d'
+      } });
 
       // Assess
       expect(value).toEqual('foo');
-      expect(provider.store.has([ 'my-parameter', undefined ].toString())).toBe(true);
+      expect(clientSpy).toBeCalledWith(expect.objectContaining({
+        input: expect.objectContaining({
+          SecretId: 'my-parameter',
+          VersionId: '7a9155b8-2dc9-466e-b4f6-5bc46516c84d'
+        })
+      }));
+
+    });
+
+    test('when called with custom sdkOptions that should be overwritten, it use the correct ones, and it returns a value from remote', async () => {
+      // Prepare
+      const provider = new SecretsProvider();
+
+      // Act
+      const value = await provider.get('my-parameter', { sdkOptions: {
+        SecretId: 'THIS_SHOULD_BE_OVERWRITTEN',
+        VersionId: '7a9155b8-2dc9-466e-b4f6-5bc46516c84d'
+      } });
+
+      // Assess
+      expect(value).toEqual('foo');
+      expect(clientSpy).toBeCalledWith(expect.objectContaining({
+        input: expect.objectContaining({
+          SecretId: 'my-parameter',
+          VersionId: '7a9155b8-2dc9-466e-b4f6-5bc46516c84d'
+        })
+      }));
 
     });
 
