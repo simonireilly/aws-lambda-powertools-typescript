@@ -56,7 +56,7 @@ class DynamoDBProvider extends BaseProvider {
   }
 
   private async formatResult(result: QueryCommandOutput, items: Record<string, string | undefined>): Promise<Record<string, string | undefined>> {
-    if (result.Items !== undefined) {
+    if (result.Items !== undefined && result.Count !== 0) {
       result.Items.forEach(item => {
         const itemUnmarshalled = unmarshall(item);
         items[itemUnmarshalled[this.sortAttr]] = itemUnmarshalled[this.valueAttr];
