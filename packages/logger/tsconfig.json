@@ -12,11 +12,11 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "pretty": true,
-        "baseUrl": "src/",
+        "baseUrl": ".",
         "rootDirs": [ "src/" ]
     },
-    "include": [ "src/**/*", "examples/**/*" ],
-    "exclude": [ "./node_modules", "**/tests/*"],
+    "include": [ "src/**/*", "package.json" ],
+    "exclude": [ "node_modules/**/*", "tests/**/*" ],
     "watchOptions": {
         "watchFile": "useFsEvents",
         "watchDirectory": "useFsEvents",
@@ -26,5 +26,8 @@
     "types": [
         "jest",
         "node"
+    ],
+    "typeRoots": [
+        "./node_modules/@types"
     ]
 }
