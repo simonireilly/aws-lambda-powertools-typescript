@@ -1,7 +1,7 @@
 {
   "name": "aws-lambda-powertools-typescript",
   "version": "0.0.1",
-  "description": "TODO: Fill this README out!",
+  "description": "A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier",
   "main": "lib/index.js",
   "types": "lib/",
   "scripts": {

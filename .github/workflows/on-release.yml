@@ -2,7 +2,7 @@ name: on-release-event
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   build:
@@ -39,10 +39,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           lcov-file: ./coverage/lcov.info
 
-
       - name: Publish
-        #Dependabot user will only have read-only perms, so don't try to report coverage
         if: ${{ github.actor != 'dependabot[bot]' }}
         run: |
           lerna publish from-package --no-commit-hooks --yes
-  # TODO: add publish step
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
