@@ -10,6 +10,7 @@
     "access": "public"
   },
   "scripts": {
+    "bench:deep": "node benchmarks/comparisons/deep.js",
     "commit": "commit",
     "test": "jest  --detectOpenHandles --coverage --verbose",
     "watch": "jest --watch",
