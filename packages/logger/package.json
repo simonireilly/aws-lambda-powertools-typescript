@@ -69,8 +69,10 @@
     "@aws-lambda-powertools/commons": "0.2.0",
     "@middy/core": "^2.5.3",
     "@types/aws-lambda": "^8.10.72",
+    "fastbench": "^1.0.1",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
-    "lodash.merge": "^4.6.2"
+    "lodash.merge": "^4.6.2",
+    "pino": "^7.6.2"
   }
 }
